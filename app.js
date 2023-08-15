@@ -4,14 +4,18 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
-// const db = require('./db/index')
-// db(()=>{
-//   console.log(1);
-// })
+const cors = require("cors");
+
+
 const db = require('./db/index')
+const useSocket = require('./socket/index')
+db(()=>{
+  useSocket()
+})
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+const { default: mongoose } = require('mongoose');
 
 var app = express();
 
@@ -27,6 +31,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use(cors())
 
 
 
