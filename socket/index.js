@@ -10,7 +10,8 @@ const useSocket = () => {
 
   io.on('connection', (socket) => {
     console.log('user connected');
-    socket.on('hello', (data) => {
+    socket.on('sendMsg', (data) => {
+      socket.broadcast.emit('broadcast', data)
       console.log(`收到客户端的消息：${data}`);
     })
   });
