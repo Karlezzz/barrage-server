@@ -18,7 +18,7 @@ var usersRouter = require('./routes/users');
 const { default: mongoose } = require('mongoose');
 
 var app = express();
-
+app.use(cors())
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
@@ -31,7 +31,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-app.use(cors())
+
 
 
 
