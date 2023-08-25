@@ -13,7 +13,7 @@ const useSocket = () => {
 
 
     socket.on('sendMsg', (data) => {
-      socket.emit('broadcast', data)
+      io.sockets.emit('broadcast', data)
       console.log(`收到客户端的消息：${data}`);
     })
   });
