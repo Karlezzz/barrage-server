@@ -3,7 +3,7 @@ var router = express.Router()
 
 router.get('/url', function (req, res, next) {
   const data = {
-    data: 'http://192.168.1.10:3001',
+    data: 'ws://192.168.1.10:3001',
     total: 1,
     error: [],
   }
