@@ -1,57 +1,67 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+var createError = require('http-errors')
+var express = require('express')
+var path = require('path')
+var cookieParser = require('cookie-parser')
+var logger = require('morgan')
 
-const cors = require("cors");
-
+const cors = require('cors')
 
 const db = require('./db/index')
 const useSocket = require('./socket/index')
-db(()=>{
-  useSocket()
+db(() => {
+	useSocket()
 })
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-const { default: mongoose } = require('mongoose');
+var indexRouter = require('./routes/index')
+var usersRouter = require('./routes/users')
+let socketRouter = require('./routes/socket')
+const { default: mongoose } = require('mongoose')
 
-var app = express();
+var app = express()
 app.use(cors())
 // view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'))
+app.set('view engine', 'ejs')
 
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(logger('dev'))
+app.use(express.json())
+app.use(express.urlencoded({ extended: false }))
+app.use(cookieParser())
+app.use(express.static(path.join(__dirname, 'public')))
 
 // app.use('/', indexRouter);
 // app.use('/users', usersRouter);
-var history = require('connect-history-api-fallback');
-app.use(express.static(path.join(__dirname, 'dist')));
-app.use(history());
+app.use('/socket', socketRouter)
 
+// const { createProxyMiddleware } = require('http-proxy-middleware')
+// const proxy = createProxyMiddleware({
+// 	target: 'ws://192.168.1.10:3001', // WebSocket服务器的地址
+// 	ws: true, // 启用WebSocket代理
+// 	changeOrigin: true, // 修改请求头中的Host字段以匹配目标服务器
+// })
 
+// 将代理规则应用到特定路径
+// app.use('/websocket', proxy)
 
+// var history = require('connect-history-api-fallback')
+// app.use(express.static(path.join(__dirname, 'dist')))
+// app.use(history())
+app.use(express.static('./dist'))
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
-});
+app.use(function (req, res, next) {
+	next(createError(404))
+})
 
 // error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+app.use(function (err, req, res, next) {
+	// set locals, only providing error in development
+	res.locals.message = err.message
+	res.locals.error = req.app.get('env') === 'development' ? err : {}
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
-});
+	// render the error page
+	res.status(err.status || 500)
+	res.render('error')
+})
 
-module.exports = app;
+module.exports = app
