@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-const { User } = require('../lib/models')
+const { User, Response } = require('../lib/models')
 
 // router.get('/', function (req, res, next) {
 //   res.send('respond with a resource');
@@ -36,10 +36,11 @@ router.post('/', (req, res, next) => {
     roomId,
     id,
     token,
-    message: 'ok',
-    code: 200
   }
-  res.send(data)
+  const response = Response.init({
+    data: [data],
+  })
+  res.send(response)
 })
 
 router.put('/', (req, res, next) => {
