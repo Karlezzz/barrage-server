@@ -6,7 +6,7 @@ const { User } = require('../lib/models')
 //   res.send('respond with a resource');
 // });
 
-router.post('/userLogin', (req, res, next) => {
+router.post('/', (req, res, next) => {
   //get Room info and check password
   //find user from sql
   //set user or update user
@@ -44,12 +44,14 @@ router.post('/userLogin', (req, res, next) => {
 
 router.put('/', (req, res, next) => {
   const { body } = req
-  console.log(body)
+
+  //update sql
   res.send({
     code: '200',
     message: 'ok',
-    data: User.init(body)
+    data: body
   })
 })
+
 
 module.exports = router;
