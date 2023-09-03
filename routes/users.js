@@ -43,15 +43,14 @@ router.post('/', (req, res, next) => {
   res.send(response)
 })
 
-router.put('/', (req, res, next) => {
+router.put('/:id', (req, res, next) => {
   const { body } = req
-
-  //update sql
-  res.send({
-    code: '200',
-    message: 'ok',
-    data: body
+  console.log(body)
+  const response = Response.init({
+    data: [body]
   })
+  //update sql
+  res.send(response)
 })
 
 
