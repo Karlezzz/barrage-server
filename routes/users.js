@@ -2,9 +2,9 @@ var express = require('express');
 var router = express.Router();
 const { User } = require('../lib/models')
 
-router.get('/', function (req, res, next) {
-  res.send('respond with a resource');
-});
+// router.get('/', function (req, res, next) {
+//   res.send('respond with a resource');
+// });
 
 router.post('/userLogin', (req, res, next) => {
   //get Room info and check password
@@ -40,6 +40,16 @@ router.post('/userLogin', (req, res, next) => {
     code: 200
   }
   res.send(data)
+})
+
+router.put('/', (req, res, next) => {
+  const { body } = req
+  console.log(body)
+  res.send({
+    code: '200',
+    message: 'ok',
+    data: User.init(body)
+  })
 })
 
 module.exports = router;
