@@ -30,22 +30,9 @@ app.use(cookieParser())
 app.use(express.static(path.join(__dirname, 'public')))
 
 // app.use('/', indexRouter);
-// app.use('/users', usersRouter);
+app.use('/user', usersRouter);
 app.use('/socket', socketRouter)
 
-// const { createProxyMiddleware } = require('http-proxy-middleware')
-// const proxy = createProxyMiddleware({
-// 	target: 'ws://192.168.1.10:3001', // WebSocket服务器的地址
-// 	ws: true, // 启用WebSocket代理
-// 	changeOrigin: true, // 修改请求头中的Host字段以匹配目标服务器
-// })
-
-// 将代理规则应用到特定路径
-// app.use('/websocket', proxy)
-
-// var history = require('connect-history-api-fallback')
-// app.use(express.static(path.join(__dirname, 'dist')))
-// app.use(history())
 app.use(express.static('./dist'))
 
 // catch 404 and forward to error handler
