@@ -15,6 +15,7 @@ db(() => {
 var indexRouter = require('./routes/index')
 var usersRouter = require('./routes/users')
 let socketRouter = require('./routes/socket')
+const roomRouter = require('./routes/room')
 const { default: mongoose } = require('mongoose')
 
 var app = express()
@@ -30,8 +31,9 @@ app.use(cookieParser())
 app.use(express.static(path.join(__dirname, 'public')))
 
 // app.use('/', indexRouter);
-app.use('/user', usersRouter);
+app.use('/user', usersRouter)
 app.use('/socket', socketRouter)
+app.use('/room', roomRouter)
 
 app.use(express.static('./dist'))
 
