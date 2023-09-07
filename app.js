@@ -19,6 +19,7 @@ const usersRouter = require('./routes/users')
 const socketRouter = require('./routes/socket')
 const roomRouter = require('./routes/room')
 const clientRouter = require('./routes/client')
+const classRoom = require('./routes/classRoom')
 const { default: mongoose } = require('mongoose')
 
 var app = express()
@@ -38,6 +39,7 @@ app.use('/user', usersRouter)
 app.use('/socket', socketRouter)
 app.use('/room', roomRouter)
 app.use('/client', clientRouter)
+app.use('/classRoom', classRoom)
 
 app.use(express.static('./dist'))
 
