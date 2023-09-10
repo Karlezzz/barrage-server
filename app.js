@@ -11,8 +11,13 @@ const cors = require('cors')
 // db(() => {
 // 	useSocket()
 // })
-const useSocket = require('./socket/index')
-useSocket()
+// const useSocket = require('./socket/index')
+// useSocket()
+const { httpProxy } = require('./socket/index')
+httpProxy.createProxyServer({
+  target: "http://localhost:3001",
+  ws: true,
+}).listen(81)
 
 var indexRouter = require('./routes/index')
 const usersRouter = require('./routes/users')
