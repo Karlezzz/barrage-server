@@ -25,6 +25,8 @@ const socketRouter = require('./routes/socket')
 const roomRouter = require('./routes/room')
 const clientRouter = require('./routes/client')
 const classRoomRouter = require('./routes/classRoom')
+const scoreRouter = require('./routes/score')
+const commentRouter = require('./routes/comment')
 const { default: mongoose } = require('mongoose')
 
 var app = express()
@@ -45,6 +47,8 @@ app.use('/socket', socketRouter)
 app.use('/room', roomRouter)
 app.use('/client', clientRouter)
 app.use('/classRoom', classRoomRouter)
+app.use('/score', scoreRouter)
+app.use('/comment', commentRouter)
 
 app.use(express.static('./dist'))
 
