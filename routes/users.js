@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 const { User, Response } = require('../lib/models')
+const {io} = require('../socket/index')
 
 // router.get('/', function (req, res, next) {
 //   res.send('respond with a resource');
@@ -13,7 +14,6 @@ router.post('/', (req, res, next) => {
   //return token, user
   const jwt = require('jsonwebtoken')
   const secret = "barrageDGUTSecret111"
-
 
   const { body } = req
   const { roomId, name, id, originToken, ipAddress, password } = body
@@ -40,7 +40,10 @@ router.post('/', (req, res, next) => {
   const response = Response.init({
     data: [data],
   })
+  io.sockets.emit('userLogin', response)
   res.send(response)
+
+  
 })
 
 router.put('/:id', (req, res, next) => {
