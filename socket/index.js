@@ -1,60 +1,31 @@
-
-
+const { port } = require('../lib/helper/getIpAndPort')
 const { Server } = require('socket.io')
+const httpProxy = require('http-proxy')
 
-const io = new Server(3001, { cors: true, transport: ['websocket'] })
+const webSocketPort = Number(port) + 1
+const io = new Server(webSocketPort, { cors: true, transport: ['websocket'] })
 
-const httpProxy = require("http-proxy");
 let so = null
 
-httpProxy.createProxyServer({
-  target: "http://localhost:3001",
-  ws: true,
-}).listen(80)
+httpProxy
+	.createProxyServer({
+		target: `http://localhost:${webSocketPort}`,
+		ws: true,
+	})
+	.listen(80)
 
 io.on('connection', socket => {
-  so = socket
-  console.log('user connected')
+	so = socket
+	console.log('user connected')
 
-  socket.on('sendMsg', data => {
-    // io.sockets.emit('broadcast', data)
-    io.sockets.emit('broadcast', data)
-    console.log(`收到客户端的消息：${data}`)
-  })
+	socket.on('sendMsg', data => {
+		io.sockets.emit('broadcast', data)
+		console.log(`收到客户端的消息：${data}`)
+	})
 
-  socket.on('disconnect', reason => {
-    console.log('user disconnect', reason)
-  })
+	socket.on('disconnect', reason => {
+		console.log('user disconnect', reason)
+	})
 })
 
-
-module.exports = {httpProxy,so,io}
-// const useSocket = () => {
-
-//   const { Server } = require('socket.io')
-
-//   const io = new Server(3001, { cors: true, transport: ['websocket'] })
-
-//   const httpProxy = require("http-proxy");
-
-//   httpProxy.createProxyServer({
-//     target: "http://localhost:3001",
-//     ws: true,
-//   }).listen(80)
-
-//   io.on('connection', socket => {
-//     console.log('user connected')
-//     console.log(io.sockets);
-
-//     socket.on('sendMsg', data => {
-//       io.sockets.emit('broadcast', data)
-//       console.log(`收到客户端的消息：${data}`)
-//     })
-
-//     socket.on('disconnect', reason => {
-//       console.log('user disconnect', reason)
-//     })
-//   })
-// }
-
-// module.exports = useSocket
+module.exports = { httpProxy, so, io }
