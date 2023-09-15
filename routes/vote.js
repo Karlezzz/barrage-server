@@ -1,6 +1,7 @@
 const express = require('express')
 const { Response } = require('../lib/models')
 const router = express.Router()
+const { io } = require('../socket/index.js')
 
 router.post('/', (req, res, next) => {
   const { body } = req
@@ -14,29 +15,27 @@ router.post('/', (req, res, next) => {
 
 router.put('/:id', (req, res, next) => {
   const { body } = req
-  
+
   //update sql
-  const updateVoteData = updateVote(body,voteFromMongo)
+  const updateVoteData = updateVote(body, voteFromMongo)
   const response = Response.init({
     data: [updateVoteData]
   })
   res.send(response)
+  io.sockets.emit('updateVote', updateVoteData)
 })
 
 function updateVote(_vote, vv) {
-  console.log(_vote);
   const { vote, option, user } = _vote
   const { voteOptions } = vv
   const originOption = voteOptions.find(o => {
     return option.id === o.id
   })
-  console.log('oO',originOption);
   if (originOption) {
     const { selectMembers } = originOption
     const hasUser = selectMembers.find(m => {
       return m.id === user.id
     })
-    console.log('user',hasUser);
     if (hasUser) return voteFromMongo
     selectMembers.push(user)
   }
@@ -45,7 +44,7 @@ function updateVote(_vote, vv) {
 
 const voteFromMongo = {
   question: 'How to learn Vue?',
-  id:'111',
+  id: '111',
   content: 'test',
   duration: 600000,
   created: 1694765644129,
