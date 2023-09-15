@@ -27,6 +27,7 @@ const clientRouter = require('./routes/client')
 const classRoomRouter = require('./routes/classRoom')
 const scoreRouter = require('./routes/score')
 const commentRouter = require('./routes/comment')
+const voteRouter = require('./routes/vote')
 const { default: mongoose } = require('mongoose')
 
 var app = express()
@@ -49,7 +50,7 @@ app.use('/client', clientRouter)
 app.use('/classRoom', classRoomRouter)
 app.use('/score', scoreRouter)
 app.use('/comment', commentRouter)
-
+app.use('/vote', voteRouter)
 app.use(express.static('./dist'))
 
 // catch 404 and forward to error handler
