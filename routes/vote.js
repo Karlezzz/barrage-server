@@ -12,4 +12,14 @@ router.post('/', (req, res, next) => {
   res.send(response)
 })
 
+router.put('/:id', (req,res,next) => {
+  const { body } = req
+  console.log(body)
+  const response = Response.init({
+    data: [body]
+  })
+  //update sql
+  res.send(response)
+})
+
 module.exports = router
