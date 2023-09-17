@@ -45,9 +45,10 @@ router.put('/:id', async (req, res, next) => {
   const { id } = body
   try {
     await MongoDB.connect()
-    const originVote = voteModel.findOne({ id })
+    const originVote = await voteModel.findOne({ id })
     if (originVote) {
-      const updateVote = voteModel.findOneAndReplace({ id }, handlerUpdateVote(body, originVote), { returnDocument: 'after' })
+      const newVote = handlerUpdateVote(body, originVote)
+      const updateVote = await voteModel.findOneAndReplace({ id }, newVote, { returnDocument: 'after' })
       response = Response.init({
         data: [updateVote]
       })
@@ -61,9 +62,9 @@ router.put('/:id', async (req, res, next) => {
   res.send(response)
 })
 
-function handlerUpdateVote(newVote, originVote) {
-  const { option, user } = newVote
-  const { voteOptions } = originVote
+function handlerUpdateVote(_vote) {
+  const {user,vote,option} = _vote
+  const {voteOptions} = vote
   const originOption = voteOptions.find(o => {
     return option.id === o.id
   })
@@ -72,10 +73,10 @@ function handlerUpdateVote(newVote, originVote) {
     const hasUser = selectMembersId.find(m => {
       return m === user.id
     })
-    if (hasUser) return voteFromMongo
-    selectMembersId.push(user)
+    if (hasUser) return vote
+    selectMembersId.push(user.id)
   }
-  return originVote
+  return vote
 }
 
 module.exports = router
