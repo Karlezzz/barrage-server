@@ -24,77 +24,100 @@ router.get('/', async (req, res, next) => {
   res.send(response)
 })
 
-router.post('/', (req, res, next) => {
+router.post('/', async (req, res, next) => {
   const { body } = req
-  console.log(body)
-  const response = Response.init({
-    data: [body]
-  })
-  //update sql
+  try {
+    await MongoDB.connect()
+    const newVote = await voteModel.create(body)
+    response = Response.init({
+      data: [newVote]
+    })
+  } catch (error) {
+    console.log(error)
+  } finally {
+    MongoDB.disconnect()
+  }
   res.send(response)
 })
 
-router.put('/:id', (req, res, next) => {
+router.put('/:id', async (req, res, next) => {
   const { body } = req
+  const { id } = body
 
-  //update sql
-  const updateVoteData = updateVote(body, voteFromMongo)
-  const response = Response.init({
-    data: [updateVoteData]
-  })
+  try {
+    await MongoDB.connect()
+    const originVote = voteModel.findOne({ id })
+    if (originVote) {
+      const updateVote = voteModel.findOneAndReplace({ id }, handlerUpdateVote(body, originVote), { returnDocument: 'after' })
+      const votes = voteModel.find({})
+      response = Response.init({
+        data: [updateVote]
+      })
+      io.sockets.emit('updateVote', updateVote)
+    }
+  } catch (error) {
+    console.log(error)
+  } finally {
+    MongoDB.disconnect()
+  }
   res.send(response)
-  io.sockets.emit('updateVote', updateVoteData)
+
+
+  // const updateVoteData = updateVote(body, voteFromMongo)
+  // const response = Response.init({
+  //   data: [updateVoteData]
+  // })
+  // res.send(response)
+  // io.sockets.emit('updateVote', updateVoteData)
 })
 
-function updateVote(_vote, vv) {
-  const { vote, option, user } = _vote
-  const { voteOptions } = vv
+function handlerUpdateVote(newVote, originVote) {
+  const { option, user } = newVote
+  const { voteOptions } = originVote
   const originOption = voteOptions.find(o => {
     return option.id === o.id
   })
   if (originOption) {
-    const { selectMembers } = originOption
-    const hasUser = selectMembers.find(m => {
-      return m.id === user.id
+    const { selectMembersId } = originOption
+    const hasUser = selectMembersId.find(m => {
+      return m === user.id
     })
     if (hasUser) return voteFromMongo
-    selectMembers.push(user)
+    selectMembersId.push(user)
   }
-  return vv
+  return originVote
 }
 
-const voteFromMongo = {
-  question: 'How to learn Vue?',
-  id: '111',
-  content: 'test',
-  duration: 600000,
-  created: 1694765644129,
-  endTime: 1994765704129,
-  voteOptions: [
-    {
-      id: 'A2HRJMCVVvUZEMSJqzQQl',
-      optionValue: 'Online',
-      selectMembers: [
-        { name: 'Tom', id: '001' },
-      ],
-    },
-    {
-      id: 'A2HRJMCVVvUZEMSJqzQ23',
-      optionValue: 'Book',
-      selectMembers: [
-        { name: 'Karle', id: '011' },
-      ],
-    },
-    {
-      id: 'A2HRJMCVVvUDUHFSJqzQ23',
-      optionValue: 'Class',
-      selectMembers: [
-        { name: 'Joe', id: '005' },
-      ],
-    },
-  ],
-}
-
-
+// const voteFromMongo = {
+//   question: 'How to learn Vue?',
+//   id: '111',
+//   content: 'test',
+//   duration: 600000,
+//   created: 1694765644129,
+//   endTime: 1994765704129,
+//   voteOptions: [
+//     {
+//       id: 'A2HRJMCVVvUZEMSJqzQQl',
+//       optionValue: 'Online',
+//       selectMembers: [
+//         { name: 'Tom', id: '001' },
+//       ],
+//     },
+//     {
+//       id: 'A2HRJMCVVvUZEMSJqzQ23',
+//       optionValue: 'Book',
+//       selectMembers: [
+//         { name: 'Karle', id: '011' },
+//       ],
+//     },
+//     {
+//       id: 'A2HRJMCVVvUDUHFSJqzQ23',
+//       optionValue: 'Class',
+//       selectMembers: [
+//         { name: 'Joe', id: '005' },
+//       ],
+//     },
+//   ],
+// }
 
 module.exports = router
