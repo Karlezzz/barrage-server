@@ -6,13 +6,7 @@ var logger = require('morgan')
 
 const cors = require('cors')
 
-// const db = require('./db/index')
-// const useSocket = require('./socket/index')
-// db(() => {
-// 	useSocket()
-// })
-// const useSocket = require('./socket/index')
-// useSocket()
+
 const { httpProxy } = require('./socket/index')
 httpProxy.createProxyServer({
   target: "http://localhost:3001",
