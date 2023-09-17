@@ -1,7 +1,28 @@
 const express = require('express')
-const { Response } = require('../lib/models')
 const router = express.Router()
 const { io } = require('../socket/index.js')
+const { Response } = require('../lib/models')
+const { VoteSchema } = require('../lib/models/Vote')
+const { MongoDB } = require('../db/index')
+
+const { instance } = VoteSchema.getInstance()
+const voteModel = instance
+let response
+
+router.get('/', async (req, res, next) => {
+  try {
+    await MongoDB.connect()
+    const voteList = await voteModel.find({})
+    response = Response.init({
+      data: voteList
+    })
+  } catch (error) {
+    console.log(error)
+  } finally {
+    MongoDB.disconnect()
+  }
+  res.send(response)
+})
 
 router.post('/', (req, res, next) => {
   const { body } = req
