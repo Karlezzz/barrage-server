@@ -43,13 +43,11 @@ router.post('/', async (req, res, next) => {
 router.put('/:id', async (req, res, next) => {
   const { body } = req
   const { id } = body
-
   try {
     await MongoDB.connect()
     const originVote = voteModel.findOne({ id })
     if (originVote) {
       const updateVote = voteModel.findOneAndReplace({ id }, handlerUpdateVote(body, originVote), { returnDocument: 'after' })
-      const votes = voteModel.find({})
       response = Response.init({
         data: [updateVote]
       })
@@ -61,14 +59,6 @@ router.put('/:id', async (req, res, next) => {
     MongoDB.disconnect()
   }
   res.send(response)
-
-
-  // const updateVoteData = updateVote(body, voteFromMongo)
-  // const response = Response.init({
-  //   data: [updateVoteData]
-  // })
-  // res.send(response)
-  // io.sockets.emit('updateVote', updateVoteData)
 })
 
 function handlerUpdateVote(newVote, originVote) {
@@ -87,37 +77,5 @@ function handlerUpdateVote(newVote, originVote) {
   }
   return originVote
 }
-
-// const voteFromMongo = {
-//   question: 'How to learn Vue?',
-//   id: '111',
-//   content: 'test',
-//   duration: 600000,
-//   created: 1694765644129,
-//   endTime: 1994765704129,
-//   voteOptions: [
-//     {
-//       id: 'A2HRJMCVVvUZEMSJqzQQl',
-//       optionValue: 'Online',
-//       selectMembers: [
-//         { name: 'Tom', id: '001' },
-//       ],
-//     },
-//     {
-//       id: 'A2HRJMCVVvUZEMSJqzQ23',
-//       optionValue: 'Book',
-//       selectMembers: [
-//         { name: 'Karle', id: '011' },
-//       ],
-//     },
-//     {
-//       id: 'A2HRJMCVVvUDUHFSJqzQ23',
-//       optionValue: 'Class',
-//       selectMembers: [
-//         { name: 'Joe', id: '005' },
-//       ],
-//     },
-//   ],
-// }
 
 module.exports = router
