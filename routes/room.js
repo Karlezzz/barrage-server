@@ -1,11 +1,11 @@
 const express = require('express')
+const router = express.Router()
 const { Response } = require('../lib/models')
 const { RoomSchema } = require('../lib/models/Room')
-const { mongoose } = require('mongoose')
-const router = express.Router()
-
 const { MongoDB } = require('../db/index')
-const roomModel = mongoose.model('rooms', RoomSchema.getSchema())
+
+const { instance } = RoomSchema.getInstance()
+const roomModel = instance
 let response
 
 router.get('/', async (req, res, next) => {
@@ -22,7 +22,6 @@ router.get('/', async (req, res, next) => {
   }
   res.send(response)
 })
-
 
 router.post('/', async (req, res, next) => {
   const { body } = req
