@@ -3,10 +3,6 @@ var router = express.Router();
 const { User, Response } = require('../lib/models')
 const {io} = require('../socket/index')
 
-// router.get('/', function (req, res, next) {
-//   res.send('respond with a resource');
-// });
-
 router.post('/', (req, res, next) => {
   //get Room info and check password
   //find user from sql

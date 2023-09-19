@@ -1,15 +1,14 @@
-const { port } = require('../lib/helper/getIpAndPort')
+const { socketPort } = require('../lib/helper/getIpAndPort')
 const { Server } = require('socket.io')
 const httpProxy = require('http-proxy')
 
-const webSocketPort = Number(port) + 1
-const io = new Server(webSocketPort, { cors: true, transport: ['websocket'] })
+const io = new Server(socketPort, { cors: true, transport: ['websocket'] })
 
 let so = null
 
 httpProxy
 	.createProxyServer({
-		target: `http://localhost:${webSocketPort}`,
+		target: `http://localhost:${socketPort}`,
 		ws: true,
 	})
 	.listen(80)
