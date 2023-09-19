@@ -12,12 +12,25 @@ let response
 
 router.post('/', async (req, res, next) => {
   const { body } = req
+  const { creator, classRoomId } = body
   try {
     await MongoDB.connect()
-    const newScore = await scoreModel.create(body)
-    response = Response.init({
-      data: [newScore]
+    const originScore = await scoreModel.findOne({
+      $and: [
+        { creator },
+        { classRoomId }
+      ]
     })
+    if (originScore) {
+      response = Response.init({
+        data: [originScore]
+      })
+    } else {
+      const newScore = await scoreModel.create(body)
+      response = Response.init({
+        data: [newScore]
+      })
+    }
   } catch (error) {
     console.log(error)
   } finally {

@@ -10,12 +10,25 @@ let response
 
 router.post('/', async (req, res, next) => {
   const { body } = req
+  const { creator, classRoomId } = body
   try {
     await MongoDB.connect()
-    const newComment = await commentModel.create(body)
-    response = Response.init({
-      data: [newComment]
+    const originComment = await commentModel.findOne({
+      $and: [
+        { creator },
+        { classRoomId }
+      ]
     })
+    if (originComment) {
+      response = Response.init({
+        data: [originComment]
+      })
+    } else {
+      const newComment = await commentModel.create(body)
+      response = Response.init({
+        data: [newComment]
+      })
+    }
   } catch (error) {
     console.log(error);
   } finally {
