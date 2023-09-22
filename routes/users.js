@@ -34,6 +34,8 @@ router.post('/', async (req, res, next) => {
     const { password: originPassword } = originRoom
     if (originPassword && originPassword !== password) return
 
+    
+
     const originUser = await userModel.findOne({
       $or: [{ id }, { ipAddress }]
     })
