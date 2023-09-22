@@ -17,14 +17,6 @@ io.on('connection', socket => {
   so = socket
   console.log('user connected')
 
-  // let ip
-  // if (socket.handshake.headers['x-forwarded-for'] != null) {
-  //   ip = socket.handshake.headers['x-forwarded-for'];
-  // } else {
-  //   ip = socket.handshake.address;
-  // }
-  // console.log(ip)
-
   socket.on('sendMsg', data => {
     io.sockets.emit('broadcast', data)
     console.log(`收到客户端的消息：${data}`)
