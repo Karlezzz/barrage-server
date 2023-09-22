@@ -17,9 +17,12 @@ let response
 
 
 router.post('/', async (req, res, next) => {
-  const { body } = req
+  const { body, ip } = req
   const { user, roomCode, password, classRoomId } = body
-  const { id, ipAddress } = user
+  const { id } = user
+  const ipAddress = ip.match(/\d+\.\d+\.\d+\.\d/)
+  console.log(ipAddress)
+
   try {
     await MongoDB.connect()
     const originRoom = await roomModel.findOne({ code: roomCode })
@@ -33,11 +36,18 @@ router.post('/', async (req, res, next) => {
       const { members } = originClassRoom
       const hasMember = members.find(m => m === id)
       if (hasMember && originUser) {
+        const updatedUser = await userModel.findOneAndReplace({ $or: [{ id }, { ipAddress }] }, {
+          ...user,
+          ipAddress: ipAddress[0]
+        })
         response = Response.init({
-          data: [originUser]
+          data: [updatedUser]
         })
       } else {
-        const newUser = await userModel.create(user)
+        const newUser = await userModel.create({
+          ...user,
+          ipAddress: ipAddress[0]
+        })
         const { id: newUserId } = newUser
         members.push(newUserId)
         await classRoomModel.updateOne({ id: classRoomId }, { members })
@@ -56,8 +66,9 @@ router.post('/', async (req, res, next) => {
 })
 
 router.put('/:id', async (req, res, next) => {
-  const { body } = req
+  const { body, ip } = req
   const { id } = body
+
   try {
     await MongoDB.connect()
     const updatedUser = await userModel.findOneAndReplace({ id }, body, { returnDocument: 'after' })
