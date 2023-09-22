@@ -8,7 +8,6 @@ const classRoomModel = ClassRoomSchema.getInstance().instance
 
 router.post('/', async (req, res, next) => {
   const { body } = req
-  console.log(body);
   const { id, inOnClass } = body
   const _isOnClass = !inOnClass
   try {
