@@ -21,41 +21,46 @@ router.post('/', async (req, res, next) => {
   const { user, roomCode, password, classRoomId } = body
   const { id } = user
   const ipAddress = ip.match(/\d+\.\d+\.\d+\.\d/)
-  console.log(ipAddress)
+  let _user
 
   try {
+
     await MongoDB.connect()
+
     const originRoom = await roomModel.findOne({ code: roomCode })
+    const originClassRoom = await classRoomModel.findOne({ id: classRoomId })
+    if (!originClassRoom || !originRoom) return
+
+    const { password: originPassword } = originRoom
+    if (originPassword && originPassword !== password) return
+
     const originUser = await userModel.findOne({
       $or: [{ id }, { ipAddress }]
     })
-    const originClassRoom = await classRoomModel.findOne({ id: classRoomId })
-    if (originRoom && originClassRoom) {
-      const { password: originPassword } = originRoom
-      if (originPassword && originPassword !== password) return
-      const { members } = originClassRoom
-      const hasMember = members.find(m => m === id)
-      if (hasMember && originUser) {
-        const updatedUser = await userModel.findOneAndReplace({ $or: [{ id }, { ipAddress }] }, {
-          ...user,
-          ipAddress: ipAddress[0]
-        })
-        response = Response.init({
-          data: [updatedUser]
-        })
-      } else {
-        const newUser = await userModel.create({
-          ...user,
-          ipAddress: ipAddress[0]
-        })
-        const { id: newUserId } = newUser
-        members.push(newUserId)
-        await classRoomModel.updateOne({ id: classRoomId }, { members })
-        response = Response.init({
-          data: [newUser]
-        })
-      }
+    if (originUser) {
+      _user = await userModel.findOneAndReplace({ $or: [{ id }, { ipAddress }] }, {
+        ...user,
+        ipAddress: ipAddress[0]
+      })
+    } else {
+      _user = await userModel.create({
+        ...user,
+        ipAddress: ipAddress[0]
+      })
     }
+
+    const { members } = originClassRoom
+    const hasMember = members.find(m => m === id)
+
+    if (!hasMember) {
+      const { id: newUserId } = _user
+      members.push(newUserId)
+      await classRoomModel.updateOne({ id: classRoomId }, { members })
+    }
+    response = Response.init({
+      data: [_user]
+    })
+
   } catch (error) {
     console.log(error)
   } finally {
@@ -66,7 +71,7 @@ router.post('/', async (req, res, next) => {
 })
 
 router.put('/:id', async (req, res, next) => {
-  const { body, ip } = req
+  const { body } = req
   const { id } = body
 
   try {
@@ -82,6 +87,5 @@ router.put('/:id', async (req, res, next) => {
   }
   res.send(response)
 })
-
 
 module.exports = router;
