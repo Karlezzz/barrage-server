@@ -1,54 +1,85 @@
-var express = require('express');
-var router = express.Router();
-const { User, Response } = require('../lib/models')
-const {io} = require('../socket/index')
+var express = require('express')
+var router = express.Router()
 
-router.post('/', (req, res, next) => {
-  //get Room info and check password
-  //find user from sql
-  //set user or update user
-  //return token, user
-  const jwt = require('jsonwebtoken')
-  const secret = "barrageDGUTSecret111"
+const { Response } = require('../lib/models')
+const { io } = require('../socket/index')
+const { MongoDB } = require('../db/index')
 
-  const { body } = req
-  const { roomId, name, id, originToken, ipAddress, password } = body
-  let token = ''
+const { UserSchema } = require('../lib/models/User')
+const { RoomSchema } = require('../lib/models/Room')
+const { ClassRoomSchema } = require('../lib/models/ClassRoom')
+const roomModel = RoomSchema.getInstance().instance
+const userModel = UserSchema.getInstance().instance
+const classRoomModel = ClassRoomSchema.getInstance().instance
 
-  jwt.verify(originToken, secret, (err, decode) => {
-    if (err) {
-      token = jwt.sign({
-        name, id
-      }, secret, {
-        expiresIn: 60 * 60 * 2
-      });
-    } else {
-      token = originToken
+let response
+
+
+
+router.post('/', async (req, res, next) => {
+  const { body, ip } = req
+  const { user, roomCode, password, classRoomId } = body
+  const { id } = user
+  const ipAddress = ip.match(/\d+\.\d+\.\d+\.\d/)
+  console.log(ipAddress)
+
+  try {
+    await MongoDB.connect()
+    const originRoom = await roomModel.findOne({ code: roomCode })
+    const originUser = await userModel.findOne({
+      $or: [{ id }, { ipAddress }]
+    })
+    const originClassRoom = await classRoomModel.findOne({ id: classRoomId })
+    if (originRoom && originClassRoom) {
+      const { password: originPassword } = originRoom
+      if (originPassword && originPassword !== password) return
+      const { members } = originClassRoom
+      const hasMember = members.find(m => m === id)
+      if (hasMember && originUser) {
+        const updatedUser = await userModel.findOneAndReplace({ $or: [{ id }, { ipAddress }] }, {
+          ...user,
+          ipAddress: ipAddress[0]
+        })
+        response = Response.init({
+          data: [updatedUser]
+        })
+      } else {
+        const newUser = await userModel.create({
+          ...user,
+          ipAddress: ipAddress[0]
+        })
+        const { id: newUserId } = newUser
+        members.push(newUserId)
+        await classRoomModel.updateOne({ id: classRoomId }, { members })
+        response = Response.init({
+          data: [newUser]
+        })
+      }
     }
-  })
-
-  const data = {
-    name,
-    roomId,
-    id,
-    token,
+  } catch (error) {
+    console.log(error)
+  } finally {
+    MongoDB.disconnect()
   }
-  const response = Response.init({
-    data: [data],
-  })
   io.sockets.emit('userLogin', response)
   res.send(response)
-
-  
 })
 
-router.put('/:id', (req, res, next) => {
-  const { body } = req
-  console.log(body)
-  const response = Response.init({
-    data: [body]
-  })
-  //update sql
+router.put('/:id', async (req, res, next) => {
+  const { body, ip } = req
+  const { id } = body
+
+  try {
+    await MongoDB.connect()
+    const updatedUser = await userModel.findOneAndReplace({ id }, body, { returnDocument: 'after' })
+    response = Response.init({
+      data: [updatedUser]
+    })
+  } catch (error) {
+    console.log(error)
+  } finally {
+    MongoDB.disconnect()
+  }
   res.send(response)
 })
 
