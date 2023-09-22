@@ -22,7 +22,7 @@ router.post('/', async (req, res, next) => {
   const { id, ipAddress } = user
   try {
     await MongoDB.connect()
-    const originRoom = await roomModel.findOne({ roomCode })
+    const originRoom = await roomModel.findOne({ code: roomCode })
     const originUser = await userModel.findOne({
       $or: [{ id }, { ipAddress }]
     })
