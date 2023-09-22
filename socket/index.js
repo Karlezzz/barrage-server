@@ -6,6 +6,10 @@ const io = new Server(socketPort, { cors: true, transport: ['websocket'] })
 
 let so = null
 
+const { MongoDB } = require('../db/index')
+const { MessageSchema } = require('../lib/models/Message')
+const messageModel = MessageSchema.getInstance().instance
+
 httpProxy
   .createProxyServer({
     target: `http://localhost:${socketPort}`,
@@ -17,15 +21,20 @@ io.on('connection', socket => {
   so = socket
   console.log('user connected')
 
-  // let ip
-  // if (socket.handshake.headers['x-forwarded-for'] != null) {
-  //   ip = socket.handshake.headers['x-forwarded-for'];
-  // } else {
-  //   ip = socket.handshake.address;
-  // }
-  // console.log(ip)
+  socket.on('sendMsg', async data => {
+    const _data = JSON.parse(data)
+    const { type } = _data
+    if (type === 'chat') {
+      try {
+        await MongoDB.connect()
+        await messageModel.create(_data)
 
-  socket.on('sendMsg', data => {
+      } catch (error) {
+        console.log(error)
+      } finally {
+        MongoDB.disconnect()
+      }
+    }
     io.sockets.emit('broadcast', data)
     console.log(`收到客户端的消息：${data}`)
   })
