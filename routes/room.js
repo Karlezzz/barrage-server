@@ -2,10 +2,11 @@ const express = require('express')
 const router = express.Router()
 const { Response } = require('../lib/models')
 const { RoomSchema } = require('../lib/models/Room')
+const { UserSchema } = require('../lib/models/User')
 const { MongoDB } = require('../db/index')
 
-const { instance } = RoomSchema.getInstance()
-const roomModel = instance
+const roomModel = RoomSchema.getInstance().instance
+const userModel = UserSchema.getInstance().instance
 let response
 
 router.get('/', async (req, res, next) => {
@@ -25,10 +26,18 @@ router.get('/', async (req, res, next) => {
 
 router.post('/', async (req, res, next) => {
   const { body } = req
-  const { id } = body
+  const { room, user } = body
+  const { id } = room
+  const { id: userId, name: userName } = user
 
   try {
     await MongoDB.connect()
+    const originUser = await userModel.findOne({ id: userId })
+    if (originUser) {
+      await userModel.findOneAndReplace({ id: userId }, user)
+    } else {
+      await userModel.create(user)
+    }
     const originRoom = await roomModel.findOne({ id })
     if (originRoom) {
       const updateRoom = await roomModel.findOneAndReplace({ id }, body, { returnDocument: 'after' })
