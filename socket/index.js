@@ -63,6 +63,10 @@ io.on('connection', socket => {
     io.sockets.emit('sendOnlineUser', onlineUser)
     console.log('user disconnect', reason)
   })
+
+  socket.on('closeSocket', data => {
+    io.sockets.emit('closeSocket', data)
+  })
 })
 
 

@@ -2,19 +2,15 @@ var express = require('express')
 var router = express.Router()
 
 const { Response } = require('../lib/models')
-const { io } = require('../socket/index')
 const { MongoDB } = require('../db/index')
-
 const { UserSchema } = require('../lib/models/User')
 const { RoomSchema } = require('../lib/models/Room')
 const { ClassRoomSchema } = require('../lib/models/ClassRoom')
+
 const roomModel = RoomSchema.getInstance().instance
 const userModel = UserSchema.getInstance().instance
 const classRoomModel = ClassRoomSchema.getInstance().instance
-
 let response
-
-
 
 router.post('/', async (req, res, next) => {
   const { body, ip } = req
@@ -22,20 +18,13 @@ router.post('/', async (req, res, next) => {
   const { id } = user
   const ipAddress = ip.match(/\d+\.\d+\.\d+\.\d/)
   let _user
-
   try {
-
     await MongoDB.connect()
-
     const originRoom = await roomModel.findOne({ code: roomCode })
     const originClassRoom = await classRoomModel.findOne({ id: classRoomId })
     if (!originClassRoom || !originRoom) return
-
     const { password: originPassword } = originRoom
     if (originPassword && originPassword !== password) return
-
-    
-
     const originUser = await userModel.findOne({
       $or: [{ id }, { ipAddress }]
     })
@@ -50,10 +39,8 @@ router.post('/', async (req, res, next) => {
         ipAddress: ipAddress[0]
       })
     }
-
     const { members } = originClassRoom
     const hasMember = members.find(m => m === id)
-
     if (!hasMember) {
       const { id: newUserId } = _user
       members.push(newUserId)
@@ -62,20 +49,17 @@ router.post('/', async (req, res, next) => {
     response = Response.init({
       data: [_user]
     })
-
   } catch (error) {
     console.log(error)
   } finally {
     MongoDB.disconnect()
   }
-  // io.sockets.emit('userLogin', response)
   res.send(response)
 })
 
 router.put('/:id', async (req, res, next) => {
   const { body } = req
   const { id } = body
-
   try {
     await MongoDB.connect()
     const updatedUser = await userModel.findOneAndReplace({ id }, body, { returnDocument: 'after' })
