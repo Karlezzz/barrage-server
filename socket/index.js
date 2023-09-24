@@ -17,31 +17,57 @@ httpProxy
   })
   .listen(80)
 
+const onlineUser = []
+
 io.on('connection', socket => {
   so = socket
   console.log('user connected')
 
   socket.on('sendMsg', async data => {
     const _data = JSON.parse(data)
-    const { type } = _data
-    if (type === 'chat') {
-      try {
-        await MongoDB.connect()
-        await messageModel.create(_data)
+    try {
+      await MongoDB.connect()
+      await messageModel.create(_data)
 
-      } catch (error) {
-        console.log(error)
-      } finally {
-        MongoDB.disconnect()
-      }
+    } catch (error) {
+      console.log(error)
+    } finally {
+      MongoDB.disconnect()
     }
+
     io.sockets.emit('broadcast', data)
     console.log(`收到客户端的消息：${data}`)
   })
 
+  socket.on('userLogin', data => {
+    
+    const {user} = data
+    socket.name = user.id
+    const originUser = onlineUser.find((u) => {
+      return u.id === user.id
+    })
+    if(!originUser) {
+      onlineUser.push(user)
+      io.sockets.emit('sendOnlineUser', onlineUser)
+    }
+    
+  })
+
   socket.on('disconnect', reason => {
+    const originUserIndex = onlineUser.findIndex((u) => {
+      return socket.name === u.id
+    })
+    if(originUserIndex !== -1) {
+      onlineUser.splice(originUserIndex, 1)
+    }
+    io.sockets.emit('sendOnlineUser', onlineUser)
     console.log('user disconnect', reason)
   })
+
+  socket.on('closeSocket', data => {
+    io.sockets.emit('closeSocket', data)
+  })
 })
+
 
 module.exports = { httpProxy, so, io }

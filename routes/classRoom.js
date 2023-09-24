@@ -5,6 +5,7 @@ const router = express.Router()
 const { MongoDB } = require('../db/index')
 const { ClassRoomSchema } = require('../lib/models/ClassRoom')
 const { RoomSchema } = require('../lib/models/Room')
+const { io } = require('../socket/index')
 const classRoomModel = ClassRoomSchema.getInstance().instance
 const roomModel = RoomSchema.getInstance().instance
 
@@ -26,6 +27,7 @@ router.post('/', async (req, res, next) => {
       response = Response.init({
         data: [updatedClassRoom]
       })
+      io.sockets.emit('closeSocket')
     } else {
       const classRoom = {
         ...body,
