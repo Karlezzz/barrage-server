@@ -43,7 +43,7 @@ router.post('/', async (req, res, next) => {
       _user = await userModel.findOneAndReplace({ $or: [{ id }, { ipAddress }] }, {
         ...user,
         ipAddress: ipAddress[0]
-      })
+      },{returnDocument:'after'})
     } else {
       _user = await userModel.create({
         ...user,
@@ -68,7 +68,7 @@ router.post('/', async (req, res, next) => {
   } finally {
     MongoDB.disconnect()
   }
-  io.sockets.emit('userLogin', response)
+  // io.sockets.emit('userLogin', response)
   res.send(response)
 })
 
