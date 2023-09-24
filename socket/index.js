@@ -17,6 +17,8 @@ httpProxy
   })
   .listen(80)
 
+const onlineUser = []
+
 io.on('connection', socket => {
   so = socket
   console.log('user connected')
@@ -37,9 +39,31 @@ io.on('connection', socket => {
     console.log(`收到客户端的消息：${data}`)
   })
 
+  socket.on('userLogin', data => {
+    
+    const {user} = data
+    socket.name = user.id
+    const originUser = onlineUser.find((u) => {
+      return u.id === user.id
+    })
+    if(!originUser) {
+      onlineUser.push(user)
+      io.sockets.emit('sendOnlineUser', onlineUser)
+    }
+    
+  })
+
   socket.on('disconnect', reason => {
+    const originUserIndex = onlineUser.findIndex((u) => {
+      return socket.name === u.id
+    })
+    if(originUserIndex !== -1) {
+      onlineUser.splice(originUserIndex, 1)
+    }
+    io.sockets.emit('sendOnlineUser', onlineUser)
     console.log('user disconnect', reason)
   })
 })
+
 
 module.exports = { httpProxy, so, io }
