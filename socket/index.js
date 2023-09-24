@@ -23,18 +23,16 @@ io.on('connection', socket => {
 
   socket.on('sendMsg', async data => {
     const _data = JSON.parse(data)
-    const { type } = _data
-    if (type === 'chat') {
-      try {
-        await MongoDB.connect()
-        await messageModel.create(_data)
+    try {
+      await MongoDB.connect()
+      await messageModel.create(_data)
 
-      } catch (error) {
-        console.log(error)
-      } finally {
-        MongoDB.disconnect()
-      }
+    } catch (error) {
+      console.log(error)
+    } finally {
+      MongoDB.disconnect()
     }
+
     io.sockets.emit('broadcast', data)
     console.log(`收到客户端的消息：${data}`)
   })
