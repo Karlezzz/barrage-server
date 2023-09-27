@@ -4,7 +4,6 @@ const { io } = require('../socket/index.js')
 const { Response } = require('../lib/models')
 const { VoteSchema } = require('../lib/models/Vote')
 const { MongoDB } = require('../db/index')
-
 const { instance } = VoteSchema.getInstance()
 const voteModel = instance
 let response
@@ -25,8 +24,8 @@ router.get('/', async (req, res, next) => {
 })
 
 router.post('/', async (req, res, next) => {
-  const { body } = req
   try {
+    const { body } = req
     await MongoDB.connect()
     const newVote = await voteModel.create(body)
     response = Response.init({
@@ -41,9 +40,9 @@ router.post('/', async (req, res, next) => {
 })
 
 router.put('/:id', async (req, res, next) => {
-  const { body } = req
-  const { id } = body
   try {
+    const { body } = req
+    const { id } = body
     await MongoDB.connect()
     const originVote = await voteModel.findOne({ id })
     if (originVote) {
@@ -63,8 +62,8 @@ router.put('/:id', async (req, res, next) => {
 })
 
 function handlerUpdateVote(_vote) {
-  const {user,vote,option} = _vote
-  const {voteOptions} = vote
+  const { user, vote, option } = _vote
+  const { voteOptions } = vote
   const originOption = voteOptions.find(o => {
     return option.id === o.id
   })
