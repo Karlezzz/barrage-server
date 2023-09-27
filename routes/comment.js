@@ -9,9 +9,9 @@ const commentModel = instance
 let response
 
 router.post('/', async (req, res, next) => {
-  const { body } = req
-  const { creator, classRoomId } = body
   try {
+    const { body } = req
+    const { creator, classRoomId } = body
     await MongoDB.connect()
     const originComment = await commentModel.findOne({
       $and: [

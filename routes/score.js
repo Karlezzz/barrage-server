@@ -1,19 +1,16 @@
 const express = require('express')
 const { Response } = require('../lib/models')
 const router = express.Router()
-
-
 const { ScoreSchema } = require('../lib/models/Score')
 const { MongoDB } = require('../db/index')
-
 const { instance } = ScoreSchema.getInstance()
 const scoreModel = instance
 let response
 
 router.post('/', async (req, res, next) => {
-  const { body } = req
-  const { creator, classRoomId } = body
   try {
+    const { body } = req
+    const { creator, classRoomId } = body
     await MongoDB.connect()
     const originScore = await scoreModel.findOne({
       $and: [

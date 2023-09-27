@@ -13,12 +13,12 @@ const classRoomModel = ClassRoomSchema.getInstance().instance
 let response
 
 router.post('/', async (req, res, next) => {
-  const { body, ip } = req
-  const { user, roomCode, password, classRoomId } = body
-  const { id } = user
-  const ipAddress = ip.match(/\d+\.\d+\.\d+\.\d/)
-  let _user
   try {
+    const { body, ip } = req
+    const { user, roomCode, password, classRoomId } = body
+    const { id } = user
+    const ipAddress = ip.match(/\d+\.\d+\.\d+\.\d/)
+    let _user
     await MongoDB.connect()
     const originRoom = await roomModel.findOne({ code: roomCode })
     const originClassRoom = await classRoomModel.findOne({ id: classRoomId })
@@ -32,7 +32,7 @@ router.post('/', async (req, res, next) => {
       _user = await userModel.findOneAndReplace({ $or: [{ id }, { ipAddress }] }, {
         ...user,
         ipAddress: ipAddress[0]
-      },{returnDocument:'after'})
+      }, { returnDocument: 'after' })
     } else {
       _user = await userModel.create({
         ...user,
@@ -58,9 +58,9 @@ router.post('/', async (req, res, next) => {
 })
 
 router.put('/:id', async (req, res, next) => {
-  const { body } = req
-  const { id } = body
   try {
+    const { body } = req
+    const { id } = body
     await MongoDB.connect()
     const updatedUser = await userModel.findOneAndReplace({ id }, body, { returnDocument: 'after' })
     response = Response.init({

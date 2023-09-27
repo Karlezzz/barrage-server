@@ -25,13 +25,12 @@ router.get('/', async (req, res, next) => {
 })
 
 router.post('/', async (req, res, next) => {
-  const { body, ip } = req
-  const { room, user } = body
-  const { id: roomId } = room
-  const { id: userId, name: userName } = user
-  const ipAddress = ip.match(/\d+\.\d+\.\d+\.\d/)
-
   try {
+    const { body, ip } = req
+    const { room, user } = body
+    const { id: roomId } = room
+    const { id: userId, name: userName } = user
+    const ipAddress = ip.match(/\d+\.\d+\.\d+\.\d/)
     await MongoDB.connect()
     const originUser = await userModel.findOne({ id: userId })
     if (originUser) {
