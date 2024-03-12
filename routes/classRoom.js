@@ -12,15 +12,15 @@ const roomModel = RoomSchema.getInstance().instance
 router.post('/', async (req, res, next) => {
   try {
     const { body } = req
-    const { id, inOnClass, ownerRoomCode } = body
+    const { id, inOnClass, ownerRoomId } = body
     const _isOnClass = !inOnClass
     await MongoDB.connect()
     const originClassRoom = await classRoomModel.findOne({ id })
-    const ownerRoom = await roomModel.findOne({ code: ownerRoomCode })
+    const ownerRoom = await roomModel.findOne({ id: ownerRoomId })
     const { classRoomIds } = ownerRoom
     if (!classRoomIds.find(i => i === id)) {
       classRoomIds.push(id)
-      await roomModel.updateOne({ code: ownerRoomCode }, { classRoomIds })
+      await roomModel.updateOne({ id: ownerRoomId }, { classRoomIds })
     }
     if (originClassRoom) {
       const updatedClassRoom = await classRoomModel.findOneAndUpdate(
@@ -55,10 +55,9 @@ router.get('/', async (req, res, next) => {
     const { query } = req
     const { roomId } = query
     await MongoDB.connect()
-    const ownerRoom = await roomModel.findOne({ id: roomId })
-    const { classRoomIds } = ownerRoom
+    const classRoomList = await classRoomModel.find({ ownerRoomId: roomId })
     response = Response.init({
-      data: [classRoomIds]
+      data: classRoomList
     })
   } catch (error) {
     return Promise.reject(error)
