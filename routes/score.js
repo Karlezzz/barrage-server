@@ -45,29 +45,55 @@ router.get('/', async (req, res, next) => {
     await MongoDB.connect()
     const scoreList = await scoreModel.find({ classRoomId })
     const commentList = await commentModel.find({ classRoomId })
-    const res = await Promise.all(scoreList
-      .map(score => {
-        const findComment = commentList.find(
-          comment => comment.creator === score.creator
-        )
-        if (findComment) return { score, comment: findComment }
-        else return score
+    let res = null
+    if (scoreList.length !== 0 && commentList.length !== 0) {
+      res = await Promise.all(scoreList
+        .map(score => {
+          const findComment = commentList.find(
+            comment => comment.creator === score.creator
+          )
+          if (findComment) return { score, comment: findComment }
+          else return score
+        })
+        .concat(
+          commentList.filter(
+            comment => !scoreList.find(score => score.creator === comment.creator)
+          )
+        ).map(async item => {
+          const user = await userModel.findOne({ id: item.score.creator })
+          return Promise.resolve({ ...item, user })
+        }))
+    } else if (scoreList.length === 0 && commentList.length !== 0) {
+      // const arr = [...scoreList, ...commentList]
+      // res = await Promise.all(arr.map(async item => {
+      //   const user = await userModel.findOne({ id: item?.score?.creator || item?.comment?.creator })
+      //   return Promise.resolve({ ...item, user })
+      // }))
+      const arr = commentList.map(comment => {
+        return { comment, score: null }
       })
-      .concat(
-        commentList.filter(
-          comment => !scoreList.find(score => score.creator === comment.creator)
-        )
-      ).map(async item => {
-        const user = await userModel.findOne({ id: item.score.creator })
+      res = await Promise.all(arr.map(async item => {
+        const user = await userModel.findOne({ id: item?.comment?.creator })
         return Promise.resolve({ ...item, user })
       }))
+    } else if (scoreList.length !== 0 && commentList.length === 0) {
+      const arr = scoreList.map(score => {
+        return { comment: null, score }
+      })
+      res = await Promise.all(arr.map(async item => {
+        const user = await userModel.findOne({ id: item?.score?.creator })
+        return Promise.resolve({ ...item, user })
+      }))
+    }
+    else res = []
+
     response = Response.init({
       data: res,
     })
   } catch (error) {
     return Promise.reject(error)
   } finally {
-    // MongoDB.disconnect()
+    MongoDB.disconnect()
   }
   res.send(response)
 
