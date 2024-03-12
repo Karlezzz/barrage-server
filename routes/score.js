@@ -41,7 +41,7 @@ router.get('/', async (req, res, next) => {
     const { query } = req
     const { classRoomId } = query
     await MongoDB.connect()
-    const commentList = await scoreModel.findOne({ classRoomId })
+    const commentList = await scoreModel.find({ classRoomId })
     response = Response.init({
       data: commentList
     })
