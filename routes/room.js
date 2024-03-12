@@ -46,7 +46,9 @@ router.post('/', async (req, res, next) => {
     }
     const originRoom = await roomModel.findOne({ id: roomId })
     if (originRoom) {
-      const updateRoom = await roomModel.findOneAndReplace({ id: roomId }, room, { returnDocument: 'after' })
+      const originRoom = await roomModel.findOne({ id: roomId })
+      const { classRoomIds } = originRoom
+      const updateRoom = await roomModel.findOneAndReplace({ id: roomId }, { classRoomIds, ...room }, { returnDocument: 'after' })
       response = Response.init({
         data: [updateRoom]
       })
