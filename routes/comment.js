@@ -13,20 +13,24 @@ router.post('/', async (req, res, next) => {
     const { body } = req
     const { creator, classRoomId } = body
     await MongoDB.connect()
-    const originComment = await commentModel.findOne({
+    const originComment = await commentModel.find({
       $and: [
         { creator },
         { classRoomId }
       ]
     })
-    if (originComment) {
-      response = Response.init({
-        data: [originComment]
-      })
-    } else {
+    if (originComment.length <= 3) {
       const newComment = await commentModel.create(body)
       response = Response.init({
         data: [newComment]
+      })
+    } else {
+      // const newComment = await commentModel.create(body)
+      // response = Response.init({
+      //   data: [newComment]
+      // })
+      response = Response.init({
+        data: originComment
       })
     }
   } catch (error) {
@@ -36,22 +40,5 @@ router.post('/', async (req, res, next) => {
   }
   res.send(response)
 })
-
-// router.get('/', async (req, res, next) => {
-//   try {
-//     const { query } = req
-//     const { classRoomId } = query
-//     await MongoDB.connect()
-//     const commentList = await commentModel.find({ classRoomId })
-//     response = Response.init({
-//       data: commentList
-//     })
-//   } catch (error) {
-//     return Promise.reject(error)
-//   } finally {
-//     MongoDB.disconnect()
-//   }
-//   res.send(response)
-// })
 
 module.exports = router
