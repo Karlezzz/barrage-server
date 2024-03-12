@@ -37,21 +37,21 @@ router.post('/', async (req, res, next) => {
   res.send(response)
 })
 
-router.get('/', async (req, res, next) => {
-  try {
-    const { query } = req
-    const { classRoomId } = query
-    await MongoDB.connect()
-    const commentList = await commentModel.find({ classRoomId })
-    response = Response.init({
-      data: commentList
-    })
-  } catch (error) {
-    return Promise.reject(error)
-  } finally {
-    MongoDB.disconnect()
-  }
-  res.send(response)
-})
+// router.get('/', async (req, res, next) => {
+//   try {
+//     const { query } = req
+//     const { classRoomId } = query
+//     await MongoDB.connect()
+//     const commentList = await commentModel.find({ classRoomId })
+//     response = Response.init({
+//       data: commentList
+//     })
+//   } catch (error) {
+//     return Promise.reject(error)
+//   } finally {
+//     MongoDB.disconnect()
+//   }
+//   res.send(response)
+// })
 
 module.exports = router
