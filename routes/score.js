@@ -15,14 +15,27 @@ let response
 router.post('/', async (req, res, next) => {
   try {
     const { body } = req
-    const { creator, classRoomId } = body
+    const { creator, classRoomId, value } = body
     await MongoDB.connect()
-    const originScore = await scoreModel.findOne({
-      $and: [{ creator }, { classRoomId }],
-    })
+    // const originScore = await scoreModel.findOne({
+    //   $and: [{ creator }, { classRoomId }],
+    // })
+    // if (originScore) {
+    //   response = Response.init({
+    //     data: [originScore],
+    //   })
+    // } else {
+    //   const newScore = await scoreModel.create(body)
+    //   response = Response.init({
+    //     data: [newScore],
+    //   })
+    // }
+    const originScore = await scoreModel.findOne({ $and: [{ creator }, { classRoomId }] })
     if (originScore) {
+      const sum = Math.ceil((originScore.value + value) / 2)
+      const newScore = await scoreModel.findOneAndUpdate({ $and: [{ creator }, { classRoomId }] }, { $set: { value: sum } }, { returnDocument: 'after' })
       response = Response.init({
-        data: [originScore],
+        data: [newScore],
       })
     } else {
       const newScore = await scoreModel.create(body)
