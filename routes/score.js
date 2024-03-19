@@ -60,28 +60,20 @@ router.get('/', async (req, res, next) => {
     const commentList = await commentModel.find({ classRoomId })
     let res = null
     if (scoreList.length !== 0 && commentList.length !== 0) {
-      res = await Promise.all(scoreList
-        .map(score => {
-          const findComment = commentList.find(
-            comment => comment.creator === score.creator
-          )
-          if (findComment) return { score, comment: findComment }
-          else return score
+      res = await Promise.all(commentList
+        .map(comment => {
+          const findScore = scoreList.find(score => score.creator === comment.creator)
+          return { score: findScore, comment }
         })
         .concat(
-          commentList.filter(
-            comment => !scoreList.find(score => score.creator === comment.creator)
+          scoreList.filter(
+            score => !commentList.find(comment => score.creator === comment.creator)
           )
         ).map(async item => {
           const user = await userModel.findOne({ id: item.score.creator })
           return Promise.resolve({ ...item, user })
         }))
     } else if (scoreList.length === 0 && commentList.length !== 0) {
-      // const arr = [...scoreList, ...commentList]
-      // res = await Promise.all(arr.map(async item => {
-      //   const user = await userModel.findOne({ id: item?.score?.creator || item?.comment?.creator })
-      //   return Promise.resolve({ ...item, user })
-      // }))
       const arr = commentList.map(comment => {
         return { comment, score: null }
       })
